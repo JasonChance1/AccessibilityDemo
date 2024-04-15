@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">AccessibilityDemo</string>
+    <string name="accessibility_description">无障碍服务</string>
+</resources>
