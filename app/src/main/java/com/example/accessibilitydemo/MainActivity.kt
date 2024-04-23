@@ -61,7 +61,7 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         if(isAccessibilitySettingsOn(MyService::class.java)){
-            binding.serviceText.setText("权限已开启")
+            binding.serviceText.text = "权限已开启"
         }else{
             binding.serviceText.text = "无权限"
         }
@@ -84,7 +84,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun Context.isAccessibilitySettingsOn(clazz: Class<out AccessibilityService?>): Boolean {
+    private fun Context.isAccessibilitySettingsOn(clazz: Class<out AccessibilityService?>): Boolean {
         var accessibilityEnabled = false    // 判断设备的无障碍功能是否可用
         try {
             accessibilityEnabled = Settings.Secure.getInt(
