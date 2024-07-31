@@ -16,7 +16,6 @@ import com.example.accessibilitydemo.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
-    private val clickEnabled = MutableLiveData(false)
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,13 +34,8 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
         }
 
-        binding.clickSwitch.setOnCheckedChangeListener { _, isChecked ->
-            Log.e("clickSwitch","clickSwitch")
-            clickEnabled.postValue(isChecked)
-        }
-
-        clickEnabled.observe(this) { isEnabled ->
-            handleAutoClick(isEnabled)
+        binding.toHome.setOnClickListener {
+            sendBroadcast(Intent(MyService.ACTION_GO_HOME))
         }
     }
 
@@ -54,21 +48,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun handleAutoClick(enable: Boolean) {
-        if (enable) {
-            val handler = Handler(Looper.getMainLooper())
-            val runnable = object : Runnable {
-                override fun run() {
-                    // 确保服务已启用并且用户开关仍然是打开的
-                    if (clickEnabled.value == true) {
-                        // 模拟点击，此处需通过无障碍服务实现
-                        handler.postDelayed(this, 500)  // 每500ms点击一次
-                    }
-                }
-            }
-            handler.post(runnable)
-        }
-    }
 
     private fun Context.isAccessibilitySettingsOn(clazz: Class<out AccessibilityService?>): Boolean {
         var accessibilityEnabled = false    // 判断设备的无障碍功能是否可用
