@@ -8,12 +8,6 @@
     android:id="@+id/container"
     tools:context=".MainActivity">
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="打开权限"
-        android:id="@+id/requestPermission"/>
-
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

@@ -1,30 +1,22 @@
 package com.example.accessibilitydemo
 
 import android.accessibilityservice.AccessibilityService
-import android.accessibilityservice.GestureDescription
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
-import android.graphics.Path
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
-import android.provider.Settings.SettingNotFoundException
 import android.text.TextUtils.SimpleStringSplitter
 import android.util.Log
-import android.view.MotionEvent
-import android.view.accessibility.AccessibilityEvent
-import android.widget.AbsListView
-import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
 import com.example.accessibilitydemo.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private val clickEnabled = MutableLiveData(false)
-
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,15 +31,10 @@ class MainActivity : AppCompatActivity() {
 //
 //            true
 //        }
-
-
-        binding.requestPermission.setOnClickListener {
-            if (this.isAccessibilitySettingsOn(MyService::class.java)) {
-                Toast.makeText(this, "已开启", Toast.LENGTH_LONG).show()
-            } else {
-                startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
-            }
+        if(!this.isAccessibilitySettingsOn(MyService::class.java)){
+            startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
         }
+
         binding.clickSwitch.setOnCheckedChangeListener { _, isChecked ->
             Log.e("clickSwitch","clickSwitch")
             clickEnabled.postValue(isChecked)
@@ -75,7 +62,6 @@ class MainActivity : AppCompatActivity() {
                     // 确保服务已启用并且用户开关仍然是打开的
                     if (clickEnabled.value == true) {
                         // 模拟点击，此处需通过无障碍服务实现
-//                        service.click(424.57492f, 905.7778f)
                         handler.postDelayed(this, 500)  // 每500ms点击一次
                     }
                 }
