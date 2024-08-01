@@ -1,7 +1,8 @@
-package com.example.accessibilitydemo
+package com.example.accessibilitydemo.service
 
 import android.accessibilityservice.AccessibilityService
 import android.accessibilityservice.GestureDescription
+import android.annotation.SuppressLint
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -19,7 +20,7 @@ import android.os.Looper
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
-import android.widget.Toast
+import com.example.accessibilitydemo.R
 import kotlin.random.Random
 
 /**
@@ -28,7 +29,7 @@ import kotlin.random.Random
  * @date :2024/4/15
  * @version 1.0.0
  */
-class MyService : AccessibilityService() {
+class MyAccessibilityService : AccessibilityService() {
     companion object{
         const val ACTION_GO_HOME = "com.example.action.GO_HOME"
         const val ACTION_LAUNCH_QQ = "com.example.action.LAUNCH_QQ"
@@ -77,9 +78,10 @@ class MyService : AccessibilityService() {
     }
 
     override fun onInterrupt() {
-        unregisterReceiver(broadcastReceiver)
+//        unregisterReceiver(broadcastReceiver)
     }
 
+    @SuppressLint("UnspecifiedRegisterReceiverFlag")
     override fun onServiceConnected() {
         super.onServiceConnected()
         Log.e("连接建立", "连接建立")
@@ -94,9 +96,16 @@ class MyService : AccessibilityService() {
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             registerReceiver(broadcastReceiver, filter, RECEIVER_NOT_EXPORTED)
+        } else {
+            registerReceiver(broadcastReceiver, filter)
         }
     }
 
+
+    override fun onDestroy() {
+        super.onDestroy()
+        unregisterReceiver(broadcastReceiver)
+    }
     fun click(x: Float, y: Float) {
         Log.e("点击", "点击：$x,$y")
         val path = Path().apply {

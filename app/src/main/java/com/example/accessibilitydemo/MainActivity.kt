@@ -6,13 +6,13 @@ import android.content.Context
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.provider.Settings
-import android.text.TextUtils.SimpleStringSplitter
+import android.text.TextUtils
 import android.util.Log
-import androidx.lifecycle.MutableLiveData
 import com.example.accessibilitydemo.databinding.ActivityMainBinding
+import com.example.accessibilitydemo.service.FloatingWindowService
+import com.example.accessibilitydemo.service.MyAccessibilityService
+import com.example.accessibilitydemo.util.requestOverlayPermission
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
@@ -22,30 +22,29 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         Log.e("onCreate","oncreate")
-//        binding.container.setOnTouchListener { v, event ->
-//            when(event.action){
-//                MotionEvent.ACTION_DOWN->Log.e("down","x:${event.x},y:${event.y}")
-//                MotionEvent.ACTION_MOVE->Log.e("down","x:${event.x},y:${event.y}")
-//            }
-//
-//            true
-//        }
-        if(!this.isAccessibilitySettingsOn(MyService::class.java)){
-            startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+
+        bindEvent()
+    }
+
+    private fun bindEvent(){
+        binding.toHome.setOnClickListener {
+            sendBroadcast(Intent(MyAccessibilityService.ACTION_GO_HOME))
         }
 
-        binding.toHome.setOnClickListener {
-            sendBroadcast(Intent(MyService.ACTION_GO_HOME))
+        binding.openFloat.setOnClickListener {
+            val intent = Intent(this, FloatingWindowService::class.java)
+            startService(intent)
         }
     }
 
     override fun onResume() {
         super.onResume()
-        if(isAccessibilitySettingsOn(MyService::class.java)){
-            binding.serviceText.text = "权限已开启"
-        }else{
-            binding.serviceText.text = "无权限"
+        // 判断是否开启了无障碍服务
+        if(!this@MainActivity.isAccessibilitySettingsOn(MyAccessibilityService::class.java)){
+            startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
         }
+        // 请求悬浮窗权限
+        this@MainActivity.requestOverlayPermission()
     }
 
 
@@ -59,7 +58,7 @@ class MainActivity : AppCompatActivity() {
         } catch (e: Settings.SettingNotFoundException) {
             e.printStackTrace()
         }
-        val mStringColonSplitter = SimpleStringSplitter(':')
+        val mStringColonSplitter = TextUtils.SimpleStringSplitter(':')
         if (accessibilityEnabled) {
             // 获取启用的无障碍服务
             val settingValue: String? = Settings.Secure.getString(
