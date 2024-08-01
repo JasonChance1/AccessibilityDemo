@@ -2,14 +2,38 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
     android:background="#80ffccff"
+    android:orientation="vertical"
     android:padding="16dp">
 
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/remove"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/add_new_point"
+        android:src="@drawable/baseline_remove_circle_outline_24" />
 
-    <Button
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/add"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:contentDescription="@string/add_new_point"
+        android:src="@drawable/baseline_add_circle_outline_24" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/complete"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:contentDescription="@string/add_new_point"
+        android:src="@drawable/baseline_check_circle_24" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/close"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="关闭" />
+        android:layout_marginTop="8dp"
+        android:contentDescription="@string/delete_a_point"
+        android:src="@drawable/baseline_clear_24" />
 </LinearLayout>

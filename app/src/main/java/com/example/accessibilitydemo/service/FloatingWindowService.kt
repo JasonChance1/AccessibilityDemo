@@ -5,12 +5,14 @@ import android.content.Intent
 import android.graphics.PixelFormat
 import android.os.Build
 import android.os.IBinder
+import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
 import android.widget.Button
+import android.widget.FrameLayout
 import android.widget.LinearLayout
 import com.example.accessibilitydemo.R
 
@@ -18,6 +20,8 @@ class FloatingWindowService : Service() {
 
     private lateinit var windowManager: WindowManager
     private lateinit var floatingView: View
+    private lateinit var pointsContainer: FrameLayout
+    private val pointsList = mutableListOf<View>() // 存储所有点的列表
 
     override fun onBind(intent: Intent?): IBinder? {
         return null
@@ -90,4 +94,50 @@ class FloatingWindowService : Service() {
             windowManager.removeView(floatingView)
         }
     }
+
+    private fun addPoint() {
+        val pointView = View(this).apply {
+            layoutParams = FrameLayout.LayoutParams(50, 50).apply {
+                leftMargin = 100
+                topMargin = 100
+            }
+            setBackgroundResource(R.drawable.baseline_my_location_24) // 自定义背景，圆形点
+        }
+
+        // 设置拖动功能
+        pointView.setOnTouchListener(object : View.OnTouchListener {
+            var dX = 0f
+            var dY = 0f
+
+            override fun onTouch(view: View, event: MotionEvent): Boolean {
+                when (event.action) {
+                    MotionEvent.ACTION_DOWN -> {
+                        dX = view.x - event.rawX
+                        dY = view.y - event.rawY
+                    }
+                    MotionEvent.ACTION_MOVE -> {
+                        view.animate()
+                            .x(event.rawX + dX)
+                            .y(event.rawY + dY)
+                            .setDuration(0)
+                            .start()
+                    }
+                }
+                return true
+            }
+        })
+
+        // 添加点到容器和列表
+        pointsContainer.addView(pointView)
+        pointsList.add(pointView)
+    }
+
+    private fun getAllPointsPosition() {
+        for (point in pointsList) {
+            val location = IntArray(2)
+            point.getLocationOnScreen(location)
+            Log.d("PointPosition", "Point at: (${location[0]}, ${location[1]})")
+        }
+    }
+
 }
