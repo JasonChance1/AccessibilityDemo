@@ -1,4 +1,4 @@
-package com.example.accessibilitydemo
+package com.example.accessibilitydemo.ui
 
 import android.accessibilityservice.AccessibilityService
 import android.annotation.SuppressLint

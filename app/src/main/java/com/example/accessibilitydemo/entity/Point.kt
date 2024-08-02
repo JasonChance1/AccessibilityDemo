@@ -16,4 +16,3 @@ data class Point (
     }
 }
 
-data class Position(var x:Float, var y:Float)
