@@ -13,8 +13,12 @@ import android.view.View
 import android.view.WindowManager
 import android.widget.Button
 import android.widget.FrameLayout
+import android.widget.ImageButton
 import android.widget.LinearLayout
+import android.widget.TextView
 import com.example.accessibilitydemo.R
+import com.example.accessibilitydemo.databinding.LayoutFloatingWindowBinding
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class FloatingWindowService : Service() {
 
@@ -51,8 +55,18 @@ class FloatingWindowService : Service() {
         layoutParams.y = 100
         layoutParams.gravity = Gravity.TOP or Gravity.START
 
-        floatingView.findViewById<Button>(R.id.close).setOnClickListener {
-            stopService(Intent(this, FloatingWindowService::class.java))
+        floatingView.findViewById<ImageButton>(R.id.close).setOnClickListener {
+//            stopService(Intent(this, FloatingWindowService::class.java))
+            clearAllPoint()
+            stopSelf()
+        }
+
+        floatingView.findViewById<ImageButton>(R.id.add).setOnClickListener {
+            addPoint()
+        }
+
+        floatingView.findViewById<ImageButton>(R.id.remove).setOnClickListener{
+            removePoint()
         }
 
         // 触摸监听以实现拖动悬浮窗
@@ -87,6 +101,8 @@ class FloatingWindowService : Service() {
         windowManager.addView(floatingView, layoutParams)
     }
 
+
+
     override fun onDestroy() {
         super.onDestroy()
         // 移除悬浮窗
@@ -95,41 +111,67 @@ class FloatingWindowService : Service() {
         }
     }
 
+
     private fun addPoint() {
-        val pointView = View(this).apply {
-            layoutParams = FrameLayout.LayoutParams(50, 50).apply {
-                leftMargin = 100
-                topMargin = 100
-            }
-            setBackgroundResource(R.drawable.baseline_my_location_24) // 自定义背景，圆形点
-        }
+        // 创建新的点视图
+        val pointView = LayoutInflater.from(this).inflate(R.layout.item_point, null)
+        pointView.findViewById<TextView>(R.id.point).text = " ${pointsList.size + 1}"
+        // 设置点的布局参数
+        val pointParams = WindowManager.LayoutParams(
+            WindowManager.LayoutParams.WRAP_CONTENT,
+            WindowManager.LayoutParams.WRAP_CONTENT,
+            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+            PixelFormat.TRANSLUCENT
+        )
 
-        // 设置拖动功能
+        pointParams.gravity = Gravity.CENTER // 默认将点置于屏幕中央
+
+        // 将点添加到窗口管理器
+        windowManager.addView(pointView, pointParams)
+        pointsList.add(pointView)
+
+        // 为每个点设置独立的拖动事件
         pointView.setOnTouchListener(object : View.OnTouchListener {
-            var dX = 0f
-            var dY = 0f
+            var initialX = 0
+            var initialY = 0
+            var initialTouchX = 0f
+            var initialTouchY = 0f
 
-            override fun onTouch(view: View, event: MotionEvent): Boolean {
+            @SuppressLint("ClickableViewAccessibility")
+            override fun onTouch(v: View, event: MotionEvent): Boolean {
                 when (event.action) {
                     MotionEvent.ACTION_DOWN -> {
-                        dX = view.x - event.rawX
-                        dY = view.y - event.rawY
+                        initialX = pointParams.x
+                        initialY = pointParams.y
+                        initialTouchX = event.rawX
+                        initialTouchY = event.rawY
+                        return true
                     }
                     MotionEvent.ACTION_MOVE -> {
-                        view.animate()
-                            .x(event.rawX + dX)
-                            .y(event.rawY + dY)
-                            .setDuration(0)
-                            .start()
+                        pointParams.x = initialX + (event.rawX - initialTouchX).toInt()
+                        pointParams.y = initialY + (event.rawY - initialTouchY).toInt()
+                        windowManager.updateViewLayout(pointView, pointParams)
+                        return true
                     }
                 }
-                return true
+                return false
             }
         })
+    }
 
-        // 添加点到容器和列表
-        pointsContainer.addView(pointView)
-        pointsList.add(pointView)
+    fun removePoint(){
+        if(pointsList.isNotEmpty()){
+            windowManager.removeView(pointsList.last())
+        }
+        pointsList.removeLast()
+    }
+
+    fun clearAllPoint(){
+        for(point in pointsList){
+            windowManager.removeView(point)
+        }
+        pointsList.clear()
     }
 
     private fun getAllPointsPosition() {
