@@ -1,14 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<TextView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/point"
-    android:layout_width="40dp"
-    android:layout_height="40dp"
-    android:textColor="#fcf"
-    android:textStyle="bold"
-    android:textSize="20dp"
-    android:gravity="center"
-    android:padding="8dp"
-    android:text="1"
-    android:drawablePadding="8dp"
-    android:background="@drawable/baseline_my_location_24"/>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:clickable="false"
+    android:layout_height="wrap_content">
+
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="#0000"
+        android:clickable="false"
+        android:gravity="center"
+        android:src="@drawable/baseline_location_searching_24" />
+
+    <TextView
+        android:id="@+id/number"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:clickable="false"
+        android:text="1" />
+
+</FrameLayout>

@@ -1,9 +1,9 @@
 package com.example.accessibilitydemo.service
+
 import android.annotation.SuppressLint
 import android.app.Service
 import android.content.Intent
 import android.graphics.PixelFormat
-import android.os.Build
 import android.os.IBinder
 import android.util.Log
 import android.view.Gravity
@@ -11,21 +11,22 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
-import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.ImageButton
-import android.widget.LinearLayout
 import android.widget.TextView
 import com.example.accessibilitydemo.R
-import com.example.accessibilitydemo.databinding.LayoutFloatingWindowBinding
-import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.example.accessibilitydemo.entity.Point
+import com.example.accessibilitydemo.entity.Position
+import com.example.accessibilitydemo.util.toJson
+import com.example.accessibilitydemo.util.toJsonArray
 
 class FloatingWindowService : Service() {
 
     private lateinit var windowManager: WindowManager
     private lateinit var floatingView: View
     private lateinit var pointsContainer: FrameLayout
-    private val pointsList = mutableListOf<View>() // 存储所有点的列表
+    private val pointsList = mutableListOf<Point>() // 存储所有点的列表
+    private val types = Point.PointType.entries.toList()
 
     override fun onBind(intent: Intent?): IBinder? {
         return null
@@ -62,11 +63,15 @@ class FloatingWindowService : Service() {
         }
 
         floatingView.findViewById<ImageButton>(R.id.add).setOnClickListener {
-            addPoint()
+            showPointTypeDialog()
         }
 
-        floatingView.findViewById<ImageButton>(R.id.remove).setOnClickListener{
+        floatingView.findViewById<ImageButton>(R.id.remove).setOnClickListener {
             removePoint()
+        }
+
+        floatingView.findViewById<ImageButton>(R.id.complete).setOnClickListener{
+            collectAllPointsPosition()
         }
 
         // 触摸监听以实现拖动悬浮窗
@@ -86,6 +91,7 @@ class FloatingWindowService : Service() {
                         initialTouchY = event.rawY
                         return true
                     }
+
                     MotionEvent.ACTION_MOVE -> {
                         layoutParams.x = initialX + (event.rawX - initialTouchX).toInt()
                         layoutParams.y = initialY + (event.rawY - initialTouchY).toInt()
@@ -102,7 +108,6 @@ class FloatingWindowService : Service() {
     }
 
 
-
     override fun onDestroy() {
         super.onDestroy()
         // 移除悬浮窗
@@ -112,11 +117,8 @@ class FloatingWindowService : Service() {
     }
 
 
-    private fun addPoint() {
-        // 创建新的点视图
+    private fun addPoint(type: Point.PointType) {
         val pointView = LayoutInflater.from(this).inflate(R.layout.item_point, null)
-        pointView.findViewById<TextView>(R.id.point).text = " ${pointsList.size + 1}"
-        // 设置点的布局参数
         val pointParams = WindowManager.LayoutParams(
             WindowManager.LayoutParams.WRAP_CONTENT,
             WindowManager.LayoutParams.WRAP_CONTENT,
@@ -125,20 +127,29 @@ class FloatingWindowService : Service() {
             PixelFormat.TRANSLUCENT
         )
 
-        pointParams.gravity = Gravity.CENTER // 默认将点置于屏幕中央
+        pointParams.gravity = Gravity.CENTER
+        val number = pointsList.size + 1
+        // 设置点视图上的编号
+        val numberTextView = pointView.findViewById<TextView>(R.id.number)
+        numberTextView.text = number.toString()
 
-        // 将点添加到窗口管理器
         windowManager.addView(pointView, pointParams)
-        pointsList.add(pointView)
 
-        // 为每个点设置独立的拖动事件
+        val point = Point(
+            number = number,
+            type = type,
+            view = pointView,
+            position = Position(0f, 0f)
+        )
+
+        pointsList.add(point)
+
         pointView.setOnTouchListener(object : View.OnTouchListener {
             var initialX = 0
             var initialY = 0
             var initialTouchX = 0f
             var initialTouchY = 0f
 
-            @SuppressLint("ClickableViewAccessibility")
             override fun onTouch(v: View, event: MotionEvent): Boolean {
                 when (event.action) {
                     MotionEvent.ACTION_DOWN -> {
@@ -148,6 +159,7 @@ class FloatingWindowService : Service() {
                         initialTouchY = event.rawY
                         return true
                     }
+
                     MotionEvent.ACTION_MOVE -> {
                         pointParams.x = initialX + (event.rawX - initialTouchX).toInt()
                         pointParams.y = initialY + (event.rawY - initialTouchY).toInt()
@@ -160,26 +172,78 @@ class FloatingWindowService : Service() {
         })
     }
 
-    fun removePoint(){
-        if(pointsList.isNotEmpty()){
-            windowManager.removeView(pointsList.last())
+    private fun collectAllPointsPosition() {
+        for (point in pointsList) {
+            val location = IntArray(2)
+            point.view.getLocationOnScreen(location)
+            point.position.x = location[0].toFloat()
+            point.position.y = location[1].toFloat()
+            Log.d(
+                "PointPosition",
+                point.toJson().toString()
+            )
         }
-        pointsList.removeLast()
+        Log.e("pointPosition",pointsList.toJsonArray().toString())
+        // 显示收集结果（可根据实际需求调整）
     }
 
-    fun clearAllPoint(){
-        for(point in pointsList){
-            windowManager.removeView(point)
+    private fun removePoint() {
+        if (pointsList.isNotEmpty()) {
+            windowManager.removeView(pointsList.last().view)
+            pointsList.removeLast()
+        }
+    }
+
+    private fun clearAllPoint() {
+        for (point in pointsList) {
+            windowManager.removeView(point.view)
         }
         pointsList.clear()
     }
 
-    private fun getAllPointsPosition() {
-        for (point in pointsList) {
-            val location = IntArray(2)
-            point.getLocationOnScreen(location)
-            Log.d("PointPosition", "Point at: (${location[0]}, ${location[1]})")
+    private fun showPointTypeDialog() {
+        // 创建自定义对话框布局视图
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.layout_dialog_point_type, null)
+
+        // 配置对话框的布局参数
+        val dialogParams = WindowManager.LayoutParams(
+            WindowManager.LayoutParams.WRAP_CONTENT,
+            WindowManager.LayoutParams.WRAP_CONTENT,
+            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_DIM_BEHIND,
+            PixelFormat.TRANSLUCENT
+        )
+
+        dialogParams.gravity = Gravity.CENTER // 在屏幕中央显示对话框
+        dialogParams.dimAmount = 0.5f // 设置背景变暗效果
+
+        // 查找对话框中的按钮并设置点击监听器
+        val btnClick = dialogView.findViewById<TextView>(R.id.click)
+        val btnSwipe = dialogView.findViewById<TextView>(R.id.swipe)
+        val btnLongClick = dialogView.findViewById<TextView>(R.id.longClick)
+        val btnCancel = dialogView.findViewById<TextView>(R.id.cancel)
+
+        btnClick.setOnClickListener {
+            windowManager.removeView(dialogView) // 移除对话框
+            addPoint(Point.PointType.CLICK)
         }
+
+        btnSwipe.setOnClickListener {
+            windowManager.removeView(dialogView) // 移除对话框
+            addPoint(Point.PointType.SWIPE)
+        }
+
+        btnLongClick.setOnClickListener {
+            windowManager.removeView(dialogView) // 移除对话框
+            addPoint(Point.PointType.LONG_CLICK)
+        }
+
+        btnCancel.setOnClickListener {
+            windowManager.removeView(dialogView) // 取消并移除对话框
+        }
+
+        // 添加对话框视图到窗口管理器
+        windowManager.addView(dialogView, dialogParams)
     }
 
 }
