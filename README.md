@@ -1,14 +1,5 @@
-1.创建AccessibilityService派生类MyService，并重写onAccessibilityEvent和onInterrupt方法
-2.在清单文件中注册setvice:        <service android:name=".MyService"
-            android:exported="false"
-            android:label="点击器"
-            android:enabled="true"
-            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
-            <intent-filter>
-                <action android:name="android.accessibilityservice.AccessibilityService" />
-            </intent-filter>
-            <meta-data
-                android:name="android.accessibilityservice"
-                android:resource="@xml/assists_service" />
-        </service>
-3.在res/xml中创建assists_service.xml文件
+https://developer.android.google.cn/reference/kotlin/android/accessibilityservice/AccessibilityService
+
+预期效果：
+1.实现点击器功能(自定义点击位置、类型、执行次数、点击间隔)
+2.实现自动打开
