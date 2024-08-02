@@ -11,23 +11,22 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
-import android.widget.FrameLayout
 import android.widget.ImageButton
 import android.widget.TextView
 import com.example.accessibilitydemo.R
+import com.example.accessibilitydemo.database.AppDatabase
+import com.example.accessibilitydemo.database.entity.Record
 import com.example.accessibilitydemo.entity.Point
 import com.example.accessibilitydemo.entity.Position
 import com.example.accessibilitydemo.util.toJson
-import com.example.accessibilitydemo.util.toJsonArray
 
 class FloatingWindowService : Service() {
 
     private lateinit var windowManager: WindowManager
     private lateinit var floatingView: View
-    private lateinit var pointsContainer: FrameLayout
     private val pointsList = mutableListOf<Point>() // 存储所有点的列表
-    private val types = Point.PointType.entries.toList()
 
+    private val recordDao = AppDatabase.get().recordDao()
     override fun onBind(intent: Intent?): IBinder? {
         return null
     }
@@ -178,13 +177,8 @@ class FloatingWindowService : Service() {
             point.view.getLocationOnScreen(location)
             point.position.x = location[0].toFloat()
             point.position.y = location[1].toFloat()
-            Log.d(
-                "PointPosition",
-                point.toJson().toString()
-            )
         }
-        Log.e("pointPosition",pointsList.toJsonArray().toString())
-        // 显示收集结果（可根据实际需求调整）
+        recordDao.insert(Record(0,pointsList,System.currentTimeMillis().toString()))
     }
 
     private fun removePoint() {

@@ -30,12 +30,13 @@ import kotlin.random.Random
  * @version 1.0.0
  */
 class MyAccessibilityService : AccessibilityService() {
-    companion object{
+    companion object {
         const val ACTION_GO_HOME = "com.example.action.GO_HOME"
         const val ACTION_LAUNCH_QQ = "com.example.action.LAUNCH_QQ"
         const val ACTION_GO_HOME_AND_LAUNCH_QQ = "com.example.action.GO_HOME_AND_LAUNCH_QQ"
         const val AUTO_CHECK = "check"
     }
+
     private val broadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             when (intent?.action) {
@@ -46,7 +47,6 @@ class MyAccessibilityService : AccessibilityService() {
             }
         }
     }
-
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         when (event?.eventType) {
@@ -70,7 +70,7 @@ class MyAccessibilityService : AccessibilityService() {
                 }
             }
 
-            AccessibilityEvent.TYPE_NOTIFICATION_STATE_CHANGED ->{
+            AccessibilityEvent.TYPE_NOTIFICATION_STATE_CHANGED -> {
 
             }
 
@@ -106,6 +106,7 @@ class MyAccessibilityService : AccessibilityService() {
         super.onDestroy()
         unregisterReceiver(broadcastReceiver)
     }
+
     fun click(x: Float, y: Float) {
         Log.e("点击", "点击：$x,$y")
         val path = Path().apply {
@@ -129,7 +130,7 @@ class MyAccessibilityService : AccessibilityService() {
         val gestureDescription = gestureBuilder
             .addStroke(GestureDescription.StrokeDescription(path, 0, duration))
             .build()
-        Log.e("Swipe","开始滑动")
+        Log.e("Swipe", "开始滑动")
         dispatchGesture(gestureDescription, object : GestureResultCallback() {
             override fun onCompleted(gestureDescription: GestureDescription?) {
                 super.onCompleted(gestureDescription)
@@ -143,12 +144,12 @@ class MyAccessibilityService : AccessibilityService() {
         }, null)
     }
 
-    private fun delay(time:Long){
+    private fun delay(time: Long) {
         Thread.sleep(time)
     }
 
-    private val randomDelay:Long
-        get() = Random.nextLong(200,800)
+    private val randomDelay: Long
+        get() = Random.nextLong(200, 800)
 
     // 返回桌面
     private fun goHome() {
@@ -165,7 +166,7 @@ class MyAccessibilityService : AccessibilityService() {
         val endY = 1400f
         swipe(startX, startY, endX, endY, 100)
         delay(randomDelay)
-        click(900f,1858f)
+        click(900f, 1858f)
     }
 
     // 打开 QQ
@@ -193,7 +194,7 @@ class MyAccessibilityService : AccessibilityService() {
         }, 1000)  // 延迟1秒后启动QQ，确保已返回桌面
     }
 
-    private fun autoCheck(){
+    private fun autoCheck() {
 
     }
 
@@ -246,7 +247,8 @@ class MyAccessibilityService : AccessibilityService() {
         val channelName = "Accessibility Service Channel"
         val importance = NotificationManager.IMPORTANCE_LOW
         val channel = NotificationChannel(channelId, channelName, importance)
-        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val notificationManager =
+            getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.createNotificationChannel(channel)
 
         val notification = Notification.Builder(this, channelId)

@@ -9,6 +9,9 @@ import android.os.Bundle
 import android.provider.Settings
 import android.text.TextUtils
 import android.util.Log
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.accessibilitydemo.adapter.RecordAdapter
+import com.example.accessibilitydemo.database.AppDatabase
 import com.example.accessibilitydemo.databinding.ActivityMainBinding
 import com.example.accessibilitydemo.service.FloatingWindowService
 import com.example.accessibilitydemo.service.MyAccessibilityService
@@ -16,14 +19,28 @@ import com.example.accessibilitydemo.util.requestOverlayPermission
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
+    private val recordDao = AppDatabase.get().recordDao()
+    private lateinit var recordAdapter: RecordAdapter
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        Log.e("onCreate","oncreate")
-
+        Log.e("onCreate","onCreate")
+        initData()
         bindEvent()
+    }
+
+    private fun initData(){
+        recordAdapter = RecordAdapter(this, mutableListOf()).apply {
+            onLoad = {
+
+            }
+        }
+        binding.recyclerView.apply {
+            layoutManager = LinearLayoutManager(this@MainActivity)
+            adapter = recordAdapter
+        }
     }
 
     private fun bindEvent(){
@@ -34,6 +51,11 @@ class MainActivity : AppCompatActivity() {
         binding.openFloat.setOnClickListener {
             val intent = Intent(this, FloatingWindowService::class.java)
             startService(intent)
+        }
+
+        recordDao.getAll().observe(this){
+            Log.e("record",it.toString())
+            recordAdapter.update(it)
         }
     }
 

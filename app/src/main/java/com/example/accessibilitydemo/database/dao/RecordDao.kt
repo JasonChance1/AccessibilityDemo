@@ -1,5 +1,6 @@
 package com.example.accessibilitydemo.database.dao
 
+import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
@@ -10,7 +11,8 @@ import com.example.accessibilitydemo.database.entity.Record
 @Dao
 interface RecordDao {
     @Query("SELECT * FROM record")
-    fun getAll(): List<Record>
+    fun getAll(): LiveData<List<Record>>
+
 
     @Insert
     fun insert(record: Record)

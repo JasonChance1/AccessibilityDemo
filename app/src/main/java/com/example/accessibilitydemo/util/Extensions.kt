@@ -4,6 +4,9 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
+import android.transition.TransitionManager
+import android.view.View
+import android.view.ViewGroup
 import com.google.gson.Gson
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
@@ -37,4 +40,15 @@ fun <T> List<T>.toJsonArray(): JsonArray? {
     } catch (e: Exception) {
         null
     }
+}
+
+/**
+ * 控制视图是否可见
+ * @param isVisible true-显示 false-隐藏
+ */
+fun View.setVisible(isVisible: Boolean, showAnim: Boolean = true) {
+    if (showAnim) {
+        TransitionManager.beginDelayedTransition(this.rootView as? ViewGroup)
+    }
+    visibility = if (isVisible) View.VISIBLE else View.GONE
 }
